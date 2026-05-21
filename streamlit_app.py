@@ -1,36 +1,123 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+import plotly.express as px
 
+# ---------------------------------
+# PAGE CONFIG
+# ---------------------------------
 st.set_page_config(
-    page_title="Warrap State Integrated Dashboard",
+    page_title="Warrap State Dashboard",
     layout="wide"
 )
 
+# ---------------------------------
+# TITLE
+# ---------------------------------
 st.title("Warrap State Integrated Dashboard")
+st.markdown("Interactive county statistics for Warrap State")
 
-st.markdown("""
-Welcome to the interactive dashboard for Warrap State, South Sudan.
-""")
+# ---------------------------------
+# LOAD DATA
+# ---------------------------------
+df = pd.read_csv("data/counties.csv")
 
-# Sample metrics
-col1, col2, col3 = st.columns(3)
+# ---------------------------------
+# SIDEBAR
+# ---------------------------------
+st.sidebar.header("County Filter")
 
-with col1:
-    st.metric("Population", "2.1M")
+county = st.sidebar.selectbox(
+    "Choose County",
+    ["All Counties"] + list(df["County"])
+)
 
-with col2:
-    st.metric("GDP Growth", "4.5%")
+# ---------------------------------
+# FILTER DATA
+# ---------------------------------
+if county == "All Counties":
+    filtered_df = df
+else:
+    filtered_df = df[df["County"] == county]
 
-with col3:
-    st.metric("Literacy Rate", "37%")
+# ---------------------------------
+# METRICS
+# ---------------------------------
+col1, col2, col3, col4 = st.columns(4)
 
-# Sample chart
-data = pd.DataFrame({
-    "Year": [2020, 2021, 2022, 2023, 2024],
-    "GDP": [2.1, 2.4, 2.8, 3.0, 3.5]
-})
+col1.metric(
+    "Population",
+    f"{filtered_df['Population'].sum():,}"
+)
 
-st.line_chart(data.set_index("Year"))
+col2.metric(
+    "Schools",
+    f"{filtered_df['Schools'].sum():,}"
+)
 
-st.success("Dashboard is running successfully!")
+col3.metric(
+    "Hospitals",
+    f"{filtered_df['Hospitals'].sum():,}"
+)
+
+col4.metric(
+    "GDP",
+    f"{filtered_df['GDP'].sum():,}M"
+)
+
+# ---------------------------------
+# BAR CHART
+# ---------------------------------
+st.subheader("Population by County")
+
+fig_population = px.bar(
+    filtered_df,
+    x="County",
+    y="Population",
+    color="County",
+    text_auto=True,
+    title="County Population Comparison"
+)
+
+st.plotly_chart(fig_population, use_container_width=True)
+
+# ---------------------------------
+# EDUCATION CHART
+# ---------------------------------
+st.subheader("Schools by County")
+
+fig_schools = px.bar(
+    filtered_df,
+    x="County",
+    y="Schools",
+    color="County",
+    text_auto=True,
+    title="Education Distribution"
+)
+
+st.plotly_chart(fig_schools, use_container_width=True)
+
+# ---------------------------------
+# HEALTH PIE CHART
+# ---------------------------------
+st.subheader("Hospital Distribution")
+
+fig_hospital = px.pie(
+    filtered_df,
+    names="County",
+    values="Hospitals",
+    title="Hospitals Across Counties"
+)
+
+st.plotly_chart(fig_hospital, use_container_width=True)
+
+# ---------------------------------
+# DATA TABLE
+# ---------------------------------
+st.subheader("County Statistics Table")
+
+st.dataframe(filtered_df, use_container_width=True)
+
+# ---------------------------------
+# FOOTER
+# ---------------------------------
+st.success("Dashboard loaded successfully")
