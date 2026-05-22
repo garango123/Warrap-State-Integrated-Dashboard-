@@ -1,6 +1,14 @@
 streamlit
 pandas
-plotly
 numpy
+plotly
+altair
 matplotlib
-sql
+seaborn
+streamlit-option-menu
+streamlit-extras
+streamlit-aggrid
+pydeck
+folium
+streamlit-folium
+openpyxl
