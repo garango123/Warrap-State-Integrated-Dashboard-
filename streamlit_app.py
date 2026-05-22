@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 # =========================================================
 # PAGE CONFIG
@@ -11,7 +12,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# CUSTOM CSS — MATCHING SCREENSHOT STYLE
+# CUSTOM CSS
 # =========================================================
 
 st.markdown("""
@@ -21,15 +22,12 @@ st.markdown("""
     background-color: #f5f7fb;
 }
 
-/* Main title */
 h1 {
     font-size: 42px !important;
     font-weight: 800 !important;
     color: #1f2937 !important;
-    margin-bottom: 10px !important;
 }
 
-/* Section headers */
 h2 {
     font-size: 28px !important;
     font-weight: 700 !important;
@@ -37,13 +35,10 @@ h2 {
     margin-top: 40px !important;
 }
 
-/* Subheaders */
 h3 {
     color: #374151 !important;
-    font-weight: 700 !important;
 }
 
-/* Paragraph text */
 p, li {
     color: #4b5563 !important;
     font-size: 16px !important;
@@ -60,19 +55,6 @@ div[data-testid="metric-container"] {
     text-align: center;
 }
 
-/* Metric label */
-div[data-testid="metric-container"] label {
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    color: #6b7280 !important;
-}
-
-/* Metric value */
-div[data-testid="metric-container"] div {
-    color: #111827 !important;
-    font-weight: 800 !important;
-}
-
 /* DataFrames */
 [data-testid="stDataFrame"] {
     border-radius: 18px;
@@ -83,22 +65,16 @@ div[data-testid="metric-container"] div {
     padding: 10px;
 }
 
-/* Info box */
-.stAlert {
-    border-radius: 16px !important;
+/* Plotly charts */
+.js-plotly-plot {
+    background: white !important;
+    border-radius: 20px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    border: 1px solid #e5e7eb;
 }
 
-/* Cards */
-.dashboard-card {
-    background: white;
-    padding: 28px;
-    border-radius: 22px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.05);
-    border: 1px solid #edf0f5;
-    margin-bottom: 25px;
-}
-
-/* Green success area */
+/* Success box */
 .success-box {
     background: #dff5e6;
     color: #1d7a3e;
@@ -107,15 +83,6 @@ div[data-testid="metric-container"] div {
     font-size: 18px;
     font-weight: 600;
     margin-top: 20px;
-}
-
-/* Horizontal line */
-hr {
-    border: none;
-    height: 1px;
-    background: #d1d5db;
-    margin-top: 40px;
-    margin-bottom: 20px;
 }
 
 </style>
@@ -130,17 +97,17 @@ st.title("Warrap State Integrated Data Analytics Dashboard")
 st.markdown("""
 A comprehensive regional analytics platform providing insights into:
 
-- Population  
-- Healthcare Infrastructure  
-- Education Systems  
-- Livestock Economy  
-- Agriculture  
-- Climate Impacts  
-- County-Level Development Indicators  
+- Population
+- Healthcare Infrastructure
+- Education Systems
+- Livestock Economy
+- Agriculture
+- Climate Impacts
+- County-Level Development Indicators
 """)
 
 # =========================================================
-# POPULATION OVERVIEW
+# POPULATION SECTION
 # =========================================================
 
 st.header("Population Overview")
@@ -155,6 +122,35 @@ Warrap State consists of six counties:
 Twic, Tonj East, Tonj South, Tonj North,
 Gogrial East, and Gogrial West.
 """)
+
+population_df = pd.DataFrame({
+    "County": [
+        "Tonj North",
+        "Tonj East",
+        "Tonj South",
+        "Gogrial West",
+        "Gogrial East",
+        "Twic"
+    ],
+    "Population": [250000, 210000, 230000, 200000, 190000, 220000]
+})
+
+st.subheader("Population by County")
+
+population_chart = px.bar(
+    population_df,
+    x="County",
+    y="Population",
+    color="County",
+    text="Population"
+)
+
+population_chart.update_layout(
+    height=500,
+    showlegend=True
+)
+
+st.plotly_chart(population_chart, use_container_width=True)
 
 # =========================================================
 # HEALTHCARE SECTION
@@ -172,36 +168,30 @@ col1.metric("PHCCs", "21")
 col2.metric("PHCUs", "27")
 col3.metric("Referral Hospitals", "4")
 
-st.subheader("Main Referral Hospitals")
-
 hospital_df = pd.DataFrame({
-    "Hospital": [
-        "Kuajok State Hospital",
-        "Tonj Civil Hospital",
-        "Turalei Hospital",
-        "Marial Lou Hospital"
-    ],
-    "Town": [
-        "Kuajok Town",
-        "Tonj Town",
-        "Turalei Town",
-        "Marial Lou Payam"
-    ],
     "County": [
-        "Gogrial West County",
-        "Tonj South County",
-        "Twic County",
-        "Tonj North County"
+        "Tonj South",
+        "Twic",
+        "Tonj North",
+        "Gogrial West",
+        "Tonj East",
+        "Gogrial East"
     ],
-    "Regional Role": [
-        "Main state referral hub",
-        "Southern regional referral center",
-        "Northern border referral coverage",
-        "Northwestern regional coverage"
-    ]
+    "Hospitals": [6, 4, 5, 5, 4, 4]
 })
 
-st.dataframe(hospital_df, use_container_width=True)
+st.subheader("Hospital Distribution")
+
+hospital_chart = px.pie(
+    hospital_df,
+    names="County",
+    values="Hospitals",
+    hole=0.3
+)
+
+hospital_chart.update_layout(height=500)
+
+st.plotly_chart(hospital_chart, use_container_width=True)
 
 # =========================================================
 # EDUCATION SECTION
@@ -243,6 +233,20 @@ e2.metric("Secondary Schools", "86")
 e3.metric("CEC Centers", "6")
 e4.metric("TVET Centers", "3")
 
+st.subheader("Schools by County")
+
+school_chart = px.bar(
+    education_df,
+    x="County",
+    y="Primary Schools",
+    color="County",
+    text="Primary Schools"
+)
+
+school_chart.update_layout(height=500)
+
+st.plotly_chart(school_chart, use_container_width=True)
+
 # =========================================================
 # LIVESTOCK SECTION
 # =========================================================
@@ -258,37 +262,34 @@ st.metric(
     value="3 Million Head"
 )
 
-st.markdown("""
+livestock_df = pd.DataFrame({
+    "Category": [
+        "Cultural Wealth",
+        "Dowry",
+        "Emergency Reserve",
+        "Food Security",
+        "Economic Assets"
+    ],
+    "Importance": [30, 20, 15, 20, 15]
+})
 
-### Livestock Importance
+st.subheader("Livestock Importance")
 
-- Source of cultural wealth  
-- Dowry and marriage systems  
-- Emergency financial reserve  
-- Food security  
-- Mobile economic assets  
+livestock_chart = px.pie(
+    livestock_df,
+    names="Category",
+    values="Importance"
+)
 
-### Seasonal Migration Patterns
+livestock_chart.update_layout(height=500)
 
-#### Dry Season
-
-Large cattle herds migrate toward Toic floodplains and swamp grazing areas in Gogrial and Twic.
-
-#### Wet Season
-
-Herds return to elevated settlement areas to avoid livestock diseases and support farming activities.
-""")
+st.plotly_chart(livestock_chart, use_container_width=True)
 
 # =========================================================
 # AGRICULTURE SECTION
 # =========================================================
 
 st.header("Agricultural Production")
-
-st.markdown("""
-Agriculture in Greater Warrap remains largely traditional,
-rain-fed, and dependent on human labor.
-""")
 
 crop_df = pd.DataFrame({
     "Crop": [
@@ -298,75 +299,52 @@ crop_df = pd.DataFrame({
         "Sesame",
         "Maize"
     ],
-    "Category": [
-        "Staple Crop",
-        "Cash Crop",
-        "Staple Crop",
-        "Intercrop",
-        "Household Crop"
-    ],
-    "Description": [
-        "Dominant staple food crop",
-        "Major localized cash crop",
-        "Widely intercropped",
-        "Intercropped with sorghum",
-        "Consumed fresh near homes"
-    ]
+    "Production Index": [95, 80, 75, 60, 55]
 })
 
-st.dataframe(crop_df, use_container_width=True)
+st.subheader("Major Crop Production")
 
-st.markdown("""
+crop_chart = px.bar(
+    crop_df,
+    x="Crop",
+    y="Production Index",
+    color="Crop",
+    text="Production Index"
+)
 
-### Gender Roles in Agriculture
+crop_chart.update_layout(height=500)
 
-Women perform approximately 90% of active agricultural labor including:
-
-- Weeding  
-- Harvesting  
-- Crop processing  
-
-Men mainly engage in:
-
-- Livestock management  
-- Heavy land clearing  
-- Security activities  
-""")
+st.plotly_chart(crop_chart, use_container_width=True)
 
 # =========================================================
-# CLIMATE & CHALLENGES
+# CLIMATE SECTION
 # =========================================================
 
 st.header("Climate and System Stressors")
 
-st.markdown("""
+climate_df = pd.DataFrame({
+    "Stress Factor": [
+        "Flooding",
+        "Disease",
+        "Water Competition",
+        "Crop Damage",
+        "Grazing Pressure"
+    ],
+    "Impact Level": [90, 75, 65, 80, 70]
+})
 
-### Climate Shocks
+st.subheader("Climate Impact Levels")
 
-Recurring flooding heavily affects:
+climate_chart = px.line(
+    climate_df,
+    x="Stress Factor",
+    y="Impact Level",
+    markers=True
+)
 
-- Crop yields  
-- Livestock survival  
-- Household food security  
+climate_chart.update_layout(height=500)
 
-Major livestock diseases include:
-
-- Anthrax  
-- Rift Valley Fever  
-
-### Resource-Based Conflict
-
-Seasonal migration patterns occasionally trigger conflicts between:
-
-- Farmers  
-- Pastoralist communities  
-
-Main causes include:
-
-- Crop trampling  
-- Water competition  
-- Grazing pressure  
-""")
+st.plotly_chart(climate_chart, use_container_width=True)
 
 # =========================================================
 # COUNTY OVERVIEW
