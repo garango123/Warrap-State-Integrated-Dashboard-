@@ -1,10 +1,5 @@
 streamlit
 pandas
 plotly
-numpy
-streamlit-option-menu
-streamlit-extras
-streamlit-aggrid
 folium
 streamlit-folium
-openpyxl
