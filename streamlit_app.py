@@ -1,123 +1,290 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 
-# ---------------------------------
-# PAGE CONFIG
-# ---------------------------------
 st.set_page_config(
-    page_title="Warrap State Dashboard",
+    page_title="Warrap State Integrated Dashboard",
     layout="wide"
 )
 
-# ---------------------------------
-# TITLE
-# ---------------------------------
-st.title("Warrap State Integrated Dashboard")
-st.markdown("Interactive county statistics for Warrap State")
+# =========================
+# HEADER
+# =========================
 
-# ---------------------------------
-# LOAD DATA
-# ---------------------------------
-df = pd.read_csv("data/counties.csv")
+st.title("Warrap State Integrated Data Analytics Dashboard")
 
-# ---------------------------------
-# SIDEBAR
-# ---------------------------------
-st.sidebar.header("County Filter")
+st.markdown("""
+A comprehensive regional analytics platform providing insights into:
 
-county = st.sidebar.selectbox(
-    "Choose County",
-    ["All Counties"] + list(df["County"])
+- Population
+- Healthcare Infrastructure
+- Education Systems
+- Livestock Economy
+- Agriculture
+- Climate Impacts
+- County-Level Development Indicators
+""")
+
+# =========================
+# POPULATION
+# =========================
+
+st.header("Population Overview")
+
+st.metric(
+    label="Estimated Population",
+    value="1.5 Million"
 )
 
-# ---------------------------------
-# FILTER DATA
-# ---------------------------------
-if county == "All Counties":
-    filtered_df = df
-else:
-    filtered_df = df[df["County"] == county]
+st.info("""
+Warrap State consists of six counties:
+Twic, Tonj East, Tonj South, Tonj North,
+Gogrial East, and Gogrial West.
+""")
 
-# ---------------------------------
-# METRICS
-# ---------------------------------
-col1, col2, col3, col4 = st.columns(4)
+# =========================
+# HEALTHCARE SECTION
+# =========================
 
-col1.metric(
-    "Population",
-    f"{filtered_df['Population'].sum():,}"
+st.header("Healthcare Infrastructure")
+
+st.markdown("""
+Greater Warrap State currently has **48 officially integrated primary healthcare facilities** operating within the regional healthcare service network.
+""")
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric("PHCCs", "21")
+col2.metric("PHCUs", "27")
+col3.metric("Referral Hospitals", "4")
+
+st.subheader("Main Referral Hospitals")
+
+hospital_df = pd.DataFrame({
+    "Hospital": [
+        "Kuajok State Hospital",
+        "Tonj Civil Hospital",
+        "Turalei Hospital",
+        "Marial Lou Hospital"
+    ],
+    "Town": [
+        "Kuajok Town",
+        "Tonj Town",
+        "Turalei Town",
+        "Marial Lou Payam"
+    ],
+    "County": [
+        "Gogrial West County",
+        "Tonj South County",
+        "Twic County",
+        "Tonj North County"
+    ],
+    "Regional Role": [
+        "Main state referral hub",
+        "Southern regional referral center",
+        "Northern border referral coverage",
+        "Northwestern regional coverage"
+    ]
+})
+
+st.dataframe(hospital_df, use_container_width=True)
+
+# =========================
+# EDUCATION SECTION
+# =========================
+
+st.header("Education Infrastructure")
+
+education_df = pd.DataFrame({
+    "County": [
+        "Gogrial West",
+        "Twic",
+        "Gogrial East",
+        "Tonj North",
+        "Tonj South",
+        "Tonj East"
+    ],
+    "Primary Schools": [315, 288, 234, 209, 109, 131],
+    "Secondary Schools": [26, 15, 11, 9, 22, 3],
+    "CEC Centers": [1, 1, 1, 1, 1, 1],
+    "TVET Centers": [1, 1, 0, 0, 1, 0],
+    "Headquarters": [
+        "Gogrial HQRS",
+        "Turalei HQRS",
+        "Lietnhom HQRS",
+        "Warrap HQRS",
+        "Tonj HQRS",
+        "Tomic HQRS"
+    ]
+})
+
+st.dataframe(education_df, use_container_width=True)
+
+st.subheader("Education Summary")
+
+e1, e2, e3, e4 = st.columns(4)
+
+e1.metric("Primary Schools", "1,286")
+e2.metric("Secondary Schools", "86")
+e3.metric("CEC Centers", "6")
+e4.metric("TVET Centers", "3")
+
+# =========================
+# LIVESTOCK SECTION
+# =========================
+
+st.header("Livestock Economy")
+
+st.markdown("""
+Livestock represents the primary store of both cultural and economic wealth in Warrap State.
+""")
+
+st.metric(
+    label="Estimated Cattle Population",
+    value="3 Million Head"
 )
 
-col2.metric(
-    "Schools",
-    f"{filtered_df['Schools'].sum():,}"
-)
+st.markdown("""
+### Livestock Importance
 
-col3.metric(
-    "Hospitals",
-    f"{filtered_df['Hospitals'].sum():,}"
-)
+- Source of cultural wealth
+- Dowry and marriage systems
+- Emergency financial reserve
+- Food security
+- Mobile economic assets
 
-col4.metric(
-    "GDP",
-    f"{filtered_df['GDP'].sum():,}M"
-)
+### Seasonal Migration Patterns
 
-# ---------------------------------
-# BAR CHART
-# ---------------------------------
-st.subheader("Population by County")
+#### Dry Season
+Large cattle herds migrate toward Toic floodplains and swamp grazing areas in Gogrial and Twic.
 
-fig_population = px.bar(
-    filtered_df,
-    x="County",
-    y="Population",
-    color="County",
-    text_auto=True,
-    title="County Population Comparison"
-)
+#### Wet Season
+Herds return to elevated settlement areas to avoid livestock diseases and support farming activities.
+""")
 
-st.plotly_chart(fig_population, use_container_width=True)
+# =========================
+# AGRICULTURE SECTION
+# =========================
 
-# ---------------------------------
-# EDUCATION CHART
-# ---------------------------------
-st.subheader("Schools by County")
+st.header("Agricultural Production")
 
-fig_schools = px.bar(
-    filtered_df,
-    x="County",
-    y="Schools",
-    color="County",
-    text_auto=True,
-    title="Education Distribution"
-)
+st.markdown("""
+Agriculture in Greater Warrap remains largely traditional,
+rain-fed, and dependent on human labor.
+""")
 
-st.plotly_chart(fig_schools, use_container_width=True)
+crop_df = pd.DataFrame({
+    "Crop": [
+        "Sorghum",
+        "Groundnuts",
+        "Millet",
+        "Sesame",
+        "Maize"
+    ],
+    "Category": [
+        "Staple Crop",
+        "Cash Crop",
+        "Staple Crop",
+        "Intercrop",
+        "Household Crop"
+    ],
+    "Description": [
+        "Dominant staple food crop",
+        "Major localized cash crop",
+        "Widely intercropped",
+        "Intercropped with sorghum",
+        "Consumed fresh near homes"
+    ]
+})
 
-# ---------------------------------
-# HEALTH PIE CHART
-# ---------------------------------
-st.subheader("Hospital Distribution")
+st.dataframe(crop_df, use_container_width=True)
 
-fig_hospital = px.pie(
-    filtered_df,
-    names="County",
-    values="Hospitals",
-    title="Hospitals Across Counties"
-)
+st.markdown("""
+### Gender Roles in Agriculture
 
-st.plotly_chart(fig_hospital, use_container_width=True)
+Women perform approximately 90% of active agricultural labor including:
 
-# ---------------------------------
-# DATA TABLE
-# ---------------------------------
-st.subheader("County Statistics Table")
+- Weeding
+- Harvesting
+- Crop processing
 
-st.dataframe(filtered_df, use_container_width=True)
+Men mainly engage in:
 
-# ---------------------------------
+- Livestock management
+- Heavy land clearing
+- Security activities
+""")
+
+# =========================
+# CLIMATE & CHALLENGES
+# =========================
+
+st.header("Climate and System Stressors")
+
+st.markdown("""
+### Climate Shocks
+
+Recurring flooding heavily affects:
+
+- Crop yields
+- Livestock survival
+- Household food security
+
+Major livestock diseases include:
+
+- Anthrax
+- Rift Valley Fever
+
+### Resource-Based Conflict
+
+Seasonal migration patterns occasionally trigger conflicts between:
+
+- Farmers
+- Pastoralist communities
+
+Main causes include:
+
+- Crop trampling
+- Water competition
+- Grazing pressure
+""")
+
+# =========================
+# COUNTY OVERVIEW
+# =========================
+
+st.header("County Overview")
+
+county_df = pd.DataFrame({
+    "County": [
+        "Gogrial West",
+        "Twic",
+        "Gogrial East",
+        "Tonj North",
+        "Tonj South",
+        "Tonj East"
+    ],
+    "Key Economic Activities": [
+        "Livestock, Farming",
+        "Livestock, Groundnuts",
+        "Agriculture, Livestock",
+        "Livestock, Sorghum",
+        "Agriculture, Trade",
+        "Pastoralism, Farming"
+    ]
+})
+
+st.dataframe(county_df, use_container_width=True)
+
+# =========================
 # FOOTER
-# ---------------------------------
-st.success("Dashboard loaded successfully")
+# =========================
+
+st.markdown("---")
+
+st.caption("""
+Data Sources:
+- Warrap State Government
+- Ministry of Health
+- Education sector field updates
+- Humanitarian and regional assessments
+""")
