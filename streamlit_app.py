@@ -218,7 +218,7 @@ education_df = pd.DataFrame({
         "Lietnhom HQRS",
         "Warrap HQRS",
         "Tonj HQRS",
-        "Tomic HQRS"
+        "Romic HQRS"
     ]
 })
 
