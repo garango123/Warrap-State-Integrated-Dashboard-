@@ -343,4 +343,4 @@ Education sector field updates
 
 Humanitarian and regional assessments
 """)
-Please, what can I put in the (requirements.txt) section in order to make this project or data analytics looks interactive, professional and engaging like these screenshots
+
