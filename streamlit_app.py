@@ -1,49 +1,153 @@
 import streamlit as st
 import pandas as pd
 
+# =========================================================
+# PAGE CONFIG
+# =========================================================
+
 st.set_page_config(
-page_title="Warrap State Integrated Dashboard",
-layout="wide"
+    page_title="Warrap State Integrated Dashboard",
+    layout="wide",
 )
 
-=========================
+# =========================================================
+# CUSTOM CSS — MATCHING SCREENSHOT STYLE
+# =========================================================
 
-HEADER
+st.markdown("""
+<style>
 
-=========================
+.main {
+    background-color: #f5f7fb;
+}
+
+/* Main title */
+h1 {
+    font-size: 42px !important;
+    font-weight: 800 !important;
+    color: #1f2937 !important;
+    margin-bottom: 10px !important;
+}
+
+/* Section headers */
+h2 {
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    margin-top: 40px !important;
+}
+
+/* Subheaders */
+h3 {
+    color: #374151 !important;
+    font-weight: 700 !important;
+}
+
+/* Paragraph text */
+p, li {
+    color: #4b5563 !important;
+    font-size: 16px !important;
+    line-height: 1.7 !important;
+}
+
+/* Metric cards */
+div[data-testid="metric-container"] {
+    background: white;
+    border: 1px solid #e5e7eb;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    text-align: center;
+}
+
+/* Metric label */
+div[data-testid="metric-container"] label {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #6b7280 !important;
+}
+
+/* Metric value */
+div[data-testid="metric-container"] div {
+    color: #111827 !important;
+    font-weight: 800 !important;
+}
+
+/* DataFrames */
+[data-testid="stDataFrame"] {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    padding: 10px;
+}
+
+/* Info box */
+.stAlert {
+    border-radius: 16px !important;
+}
+
+/* Cards */
+.dashboard-card {
+    background: white;
+    padding: 28px;
+    border-radius: 22px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+    border: 1px solid #edf0f5;
+    margin-bottom: 25px;
+}
+
+/* Green success area */
+.success-box {
+    background: #dff5e6;
+    color: #1d7a3e;
+    padding: 20px;
+    border-radius: 14px;
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+/* Horizontal line */
+hr {
+    border: none;
+    height: 1px;
+    background: #d1d5db;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================================
+# HEADER
+# =========================================================
 
 st.title("Warrap State Integrated Data Analytics Dashboard")
 
 st.markdown("""
 A comprehensive regional analytics platform providing insights into:
 
-Population
-
-Healthcare Infrastructure
-
-Education Systems
-
-Livestock Economy
-
-Agriculture
-
-Climate Impacts
-
-County-Level Development Indicators
+- Population  
+- Healthcare Infrastructure  
+- Education Systems  
+- Livestock Economy  
+- Agriculture  
+- Climate Impacts  
+- County-Level Development Indicators  
 """)
 
-
-=========================
-
-POPULATION
-
-=========================
+# =========================================================
+# POPULATION OVERVIEW
+# =========================================================
 
 st.header("Population Overview")
 
 st.metric(
-label="Estimated Population",
-value="1.5 Million"
+    label="Estimated Population",
+    value="1.5 Million"
 )
 
 st.info("""
@@ -52,11 +156,9 @@ Twic, Tonj East, Tonj South, Tonj North,
 Gogrial East, and Gogrial West.
 """)
 
-=========================
-
-HEALTHCARE SECTION
-
-=========================
+# =========================================================
+# HEALTHCARE SECTION
+# =========================================================
 
 st.header("Healthcare Infrastructure")
 
@@ -73,63 +175,61 @@ col3.metric("Referral Hospitals", "4")
 st.subheader("Main Referral Hospitals")
 
 hospital_df = pd.DataFrame({
-"Hospital": [
-"Kuajok State Hospital",
-"Tonj Civil Hospital",
-"Turalei Hospital",
-"Marial Lou Hospital"
-],
-"Town": [
-"Kuajok Town",
-"Tonj Town",
-"Turalei Town",
-"Marial Lou Payam"
-],
-"County": [
-"Gogrial West County",
-"Tonj South County",
-"Twic County",
-"Tonj North County"
-],
-"Regional Role": [
-"Main state referral hub",
-"Southern regional referral center",
-"Northern border referral coverage",
-"Northwestern regional coverage"
-]
+    "Hospital": [
+        "Kuajok State Hospital",
+        "Tonj Civil Hospital",
+        "Turalei Hospital",
+        "Marial Lou Hospital"
+    ],
+    "Town": [
+        "Kuajok Town",
+        "Tonj Town",
+        "Turalei Town",
+        "Marial Lou Payam"
+    ],
+    "County": [
+        "Gogrial West County",
+        "Tonj South County",
+        "Twic County",
+        "Tonj North County"
+    ],
+    "Regional Role": [
+        "Main state referral hub",
+        "Southern regional referral center",
+        "Northern border referral coverage",
+        "Northwestern regional coverage"
+    ]
 })
 
 st.dataframe(hospital_df, use_container_width=True)
 
-=========================
-
-EDUCATION SECTION
-
-=========================
+# =========================================================
+# EDUCATION SECTION
+# =========================================================
 
 st.header("Education Infrastructure")
 
 education_df = pd.DataFrame({
-"County": [
-"Gogrial West",
-"Twic",
-"Gogrial East",
-"Tonj North",
-"Tonj South",
-"Tonj East"
-],
-"Primary Schools": [315, 288, 234, 209, 109, 131],
-"Secondary Schools": [26, 15, 11, 9, 22, 3],
-"CEC Centers": [1, 1, 1, 1, 1, 1],
-"TVET Centers": [1, 1, 0, 0, 1, 0],
-"Headquarters": [
-"Gogrial HQRS",
-"Turalei HQRS",
-"Lietnhom HQRS",
-"Warrap HQRS",
-"Tonj HQRS",
-"Tomic HQRS"
-]
+    "County": [
+        "Gogrial West",
+        "Twic",
+        "Gogrial East",
+        "Tonj North",
+        "Tonj South",
+        "Tonj East"
+    ],
+    "Primary Schools": [315, 288, 234, 209, 109, 131],
+    "Secondary Schools": [26, 15, 11, 9, 22, 3],
+    "CEC Centers": [1, 1, 1, 1, 1, 1],
+    "TVET Centers": [1, 1, 0, 0, 1, 0],
+    "Headquarters": [
+        "Gogrial HQRS",
+        "Turalei HQRS",
+        "Lietnhom HQRS",
+        "Warrap HQRS",
+        "Tonj HQRS",
+        "Tomic HQRS"
+    ]
 })
 
 st.dataframe(education_df, use_container_width=True)
@@ -143,11 +243,9 @@ e2.metric("Secondary Schools", "86")
 e3.metric("CEC Centers", "6")
 e4.metric("TVET Centers", "3")
 
-=========================
-
-LIVESTOCK SECTION
-
-=========================
+# =========================================================
+# LIVESTOCK SECTION
+# =========================================================
 
 st.header("Livestock Economy")
 
@@ -156,41 +254,34 @@ Livestock represents the primary store of both cultural and economic wealth in W
 """)
 
 st.metric(
-label="Estimated Cattle Population",
-value="3 Million Head"
+    label="Estimated Cattle Population",
+    value="3 Million Head"
 )
 
 st.markdown("""
 
-Livestock Importance
+### Livestock Importance
 
-Source of cultural wealth
+- Source of cultural wealth  
+- Dowry and marriage systems  
+- Emergency financial reserve  
+- Food security  
+- Mobile economic assets  
 
-Dowry and marriage systems
+### Seasonal Migration Patterns
 
-Emergency financial reserve
-
-Food security
-
-Mobile economic assets
-
-
-Seasonal Migration Patterns
-
-Dry Season
+#### Dry Season
 
 Large cattle herds migrate toward Toic floodplains and swamp grazing areas in Gogrial and Twic.
 
-Wet Season
+#### Wet Season
 
 Herds return to elevated settlement areas to avoid livestock diseases and support farming activities.
 """)
 
-=========================
-
-AGRICULTURE SECTION
-
-=========================
+# =========================================================
+# AGRICULTURE SECTION
+# =========================================================
 
 st.header("Agricultural Production")
 
@@ -200,135 +291,123 @@ rain-fed, and dependent on human labor.
 """)
 
 crop_df = pd.DataFrame({
-"Crop": [
-"Sorghum",
-"Groundnuts",
-"Millet",
-"Sesame",
-"Maize"
-],
-"Category": [
-"Staple Crop",
-"Cash Crop",
-"Staple Crop",
-"Intercrop",
-"Household Crop"
-],
-"Description": [
-"Dominant staple food crop",
-"Major localized cash crop",
-"Widely intercropped",
-"Intercropped with sorghum",
-"Consumed fresh near homes"
-]
+    "Crop": [
+        "Sorghum",
+        "Groundnuts",
+        "Millet",
+        "Sesame",
+        "Maize"
+    ],
+    "Category": [
+        "Staple Crop",
+        "Cash Crop",
+        "Staple Crop",
+        "Intercrop",
+        "Household Crop"
+    ],
+    "Description": [
+        "Dominant staple food crop",
+        "Major localized cash crop",
+        "Widely intercropped",
+        "Intercropped with sorghum",
+        "Consumed fresh near homes"
+    ]
 })
 
 st.dataframe(crop_df, use_container_width=True)
 
 st.markdown("""
 
-Gender Roles in Agriculture
+### Gender Roles in Agriculture
 
 Women perform approximately 90% of active agricultural labor including:
 
-Weeding
-
-Harvesting
-
-Crop processing
-
+- Weeding  
+- Harvesting  
+- Crop processing  
 
 Men mainly engage in:
 
-Livestock management
-
-Heavy land clearing
-
-Security activities
+- Livestock management  
+- Heavy land clearing  
+- Security activities  
 """)
 
-
-=========================
-
-CLIMATE & CHALLENGES
-
-=========================
+# =========================================================
+# CLIMATE & CHALLENGES
+# =========================================================
 
 st.header("Climate and System Stressors")
 
 st.markdown("""
 
-Climate Shocks
+### Climate Shocks
 
 Recurring flooding heavily affects:
 
-Crop yields
-
-Livestock survival
-
-Household food security
-
+- Crop yields  
+- Livestock survival  
+- Household food security  
 
 Major livestock diseases include:
 
-Anthrax
+- Anthrax  
+- Rift Valley Fever  
 
-Rift Valley Fever
-
-
-Resource-Based Conflict
+### Resource-Based Conflict
 
 Seasonal migration patterns occasionally trigger conflicts between:
 
-Farmers
-
-Pastoralist communities
-
+- Farmers  
+- Pastoralist communities  
 
 Main causes include:
 
-Crop trampling
-
-Water competition
-
-Grazing pressure
+- Crop trampling  
+- Water competition  
+- Grazing pressure  
 """)
 
-
-=========================
-
-COUNTY OVERVIEW
-
-=========================
+# =========================================================
+# COUNTY OVERVIEW
+# =========================================================
 
 st.header("County Overview")
 
 county_df = pd.DataFrame({
-"County": [
-"Gogrial West",
-"Twic",
-"Gogrial East",
-"Tonj North",
-"Tonj South",
-"Tonj East"
-],
-"Key Economic Activities": [
-"Livestock, Farming",
-"Livestock, Groundnuts",
-"Agriculture, Livestock",
-"Livestock, Sorghum",
-"Agriculture, Trade",
-"Pastoralism, Farming"
-]
+    "County": [
+        "Gogrial West",
+        "Twic",
+        "Gogrial East",
+        "Tonj North",
+        "Tonj South",
+        "Tonj East"
+    ],
+    "Key Economic Activities": [
+        "Livestock, Farming",
+        "Livestock, Groundnuts",
+        "Agriculture, Livestock",
+        "Livestock, Sorghum",
+        "Agriculture, Trade",
+        "Pastoralism, Farming"
+    ]
 })
 
 st.dataframe(county_df, use_container_width=True)
 
-=========================
+# =========================================================
+# SUCCESS BOX
+# =========================================================
 
-FOOTER
+st.markdown("""
+<div class="success-box">
+Dashboard loaded successfully
+</div>
+""", unsafe_allow_html=True)
 
-=========================
+# =========================================================
+# FOOTER
+# =========================================================
 
 st.markdown("---")
 
@@ -343,4 +422,3 @@ Education sector field updates
 
 Humanitarian and regional assessments
 """)
-
