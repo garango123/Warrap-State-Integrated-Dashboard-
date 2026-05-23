@@ -295,9 +295,9 @@ crop_df = pd.DataFrame({
     "Crop": [
         "Sorghum",
         "Groundnuts",
-        "Millet",
+        "Maize",
         "Sesame",
-        "Maize"
+        "Millet"
     ],
     "Production Index": [95, 80, 75, 60, 55]
 })
