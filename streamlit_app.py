@@ -132,7 +132,7 @@ population_df = pd.DataFrame({
         "Gogrial East",
         "Twic"
     ],
-    "Population": [250000, 210000, 230000, 200000, 190000, 220000]
+    "Population": [260000, 175000, 187000, 382000, 158000, 338000]
 })
 
 st.subheader("Population by County")
