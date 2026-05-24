@@ -1,14 +1,13 @@
-# Warrap-State-Integrated-Dashboard-
-Interactive Streamlit dashboard for Warrap State, South Sudan featuring GDP, education, health, climate, elections, and population analytics across all counties. Includes county-level analysis, Power BI-ready exports, interactive visualizations, and optional SQLite database integration.
+# Warrap State Integrated Data Analytics Dashboard
 
-# Warrap State Dashboard
+The Warrap State Integrated Data Analytics Dashboard is an interactive regional analytics platform designed to provide data-driven insights into:
 
-Interactive dashboard for Warrap State, South Sudan.
+- Population trends
+- Healthcare infrastructure
+- Education systems
+- Livestock economy
+- Agriculture
+- Climate impacts
+- County-level development indicators
 
-## Features
-- GDP Analysis
-- Education Dashboard
-- Health Dashboard
-- Climate Dashboard
-- Election Dashboard
-- Population Growth
+Built using Streamlit, the dashboard helps policymakers, researchers, students, and development partners explore regional statistics through interactive visualizations, charts, and analytics tools.
