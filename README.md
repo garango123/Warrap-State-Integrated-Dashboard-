@@ -11,3 +11,6 @@ The Warrap State Integrated Data Analytics Dashboard is an interactive regional 
 - County-level development indicators
 
 Built using Streamlit, the dashboard helps policymakers, researchers, students, and development partners explore regional statistics through interactive visualizations, charts, and analytics tools.
+
+
+[![Global Ranking](https://stardev.io/developers/garango123/badge/languages/global.svg)](https://stardev.io/developers/garango123)
