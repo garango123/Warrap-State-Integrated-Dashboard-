@@ -180,6 +180,49 @@ hospital_df = pd.DataFrame({
     "Hospitals": [6, 4, 5, 5, 4, 4]
 })
 
+# =========================================================
+# REFERRAL HOSPITAL DIRECTORY
+# =========================================================
+
+st.subheader("🏥 Referral Hospital Directory")
+
+referral_hospitals_df = pd.DataFrame({
+    "Hospital Name": [
+        "Kuajok State Hospital",
+        "Tonj Civil Hospital",
+        "Turalei Hospital",
+        "Marial Lou Hospital"
+    ],
+    "Town Location": [
+        "Kuajok Town",
+        "Tonj Town",
+        "Turalei Town",
+        "Marial Lou Payam"
+    ],
+    "County Location": [
+        "Gogrial West County",
+        "Tonj South County",
+        "Twic County",
+        "Tonj North County"
+    ],
+    "Regional Focus": [
+        "Main capital hub for the state",
+        "Main hub for the southern zone",
+        "Handles the northern border areas",
+        "Handles the northwestern interior"
+    ]
+})
+
+st.dataframe(
+    referral_hospitals_df,
+    use_container_width=True,
+    hide_index=True
+)
+
+st.markdown("""
+**The 4 main referral hospitals in Warrap State are arranged below alongside their exact town and county locations.**
+""")
+
 st.subheader("Hospital Distribution")
 
 hospital_chart = px.pie(
