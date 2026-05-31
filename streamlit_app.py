@@ -259,7 +259,7 @@ Livestock represents the primary store of both cultural and economic wealth in W
 
 st.metric(
     label="Estimated Cattle Population",
-    value="3 Million Head"
+    value="7 Million Head"
 )
 
 livestock_df = pd.DataFrame({
