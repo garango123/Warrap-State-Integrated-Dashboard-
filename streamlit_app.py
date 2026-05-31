@@ -184,7 +184,7 @@ hospital_df = pd.DataFrame({
 # REFERRAL HOSPITAL DIRECTORY
 # =========================================================
 
-st.subheader("🏥 Referral Hospital Directory")
+st.subheader(" Referral Hospital Directory")
 
 referral_hospitals_df = pd.DataFrame({
     "Hospital Name": [
@@ -220,7 +220,7 @@ st.dataframe(
 )
 
 st.markdown("""
-**The 4 main referral hospitals in Warrap State are arranged below alongside their exact town and county locations.**
+**The 4 main referral hospitals operating in Warrap State are arranged above alongside their exact town and county locations.**
 """)
 
 st.subheader("Hospital Distribution")
