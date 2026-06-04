@@ -159,7 +159,7 @@ st.plotly_chart(population_chart, use_container_width=True)
 st.header("Healthcare Infrastructure")
 
 st.markdown("""
-Greater Warrap State currently has 48 officially integrated primary healthcare facilities operating within the regional healthcare service network.
+Greater Warrap State currently has 108 officially integrated primary healthcare facilities operating within the regional healthcare service network.
 """)
 
 col1, col2, col3 = st.columns(3)
