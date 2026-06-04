@@ -219,18 +219,180 @@ st.dataframe(
     hide_index=True
 )
 
-st.markdown("""
-**The 4 main referral hospitals operating in Warrap State are arranged above alongside their exact town and county locations.**
+
+# =========================================================
+# HEALTH FACILITY DIRECTORY
+# =========================================================
+
+st.header("Healthcare Facility Directory")
+
+st.info("""
+The table below contains officially integrated Primary Health Care Centres (PHCCs)
+and Primary Health Care Units (PHCUs) across Warrap State.
+
+Note: Some facilities are currently experiencing operational challenges due to
+communal conflict and insecurity in certain areas. Functionality may vary
+depending on security and funding conditions.
 """)
 
-st.subheader("Hospital Distribution")
 
-hospital_chart = px.pie(
-    hospital_df,
-    names="County",
-    values="Hospitals",
-    hole=0.3
+facility_data = [
+# TWIC COUNTY PHCCs
+["Twic","PHCC","Ajak Kuac"],
+["Twic","PHCC","Akok PHCC"],
+["Twic","PHCC","Aweng"],
+["Twic","PHCC","Magak PHCC"],
+["Twic","PHCC","Majok Noon"],
+["Twic","PHCC","Mayen Abun"],
+["Twic","PHCC","Turalei PHCC"],
+["Twic","PHCC","Wunrok PHCC"],
+
+# TWIC COUNTY PHCUs
+["Twic","PHCU","Ajong PHCU"],
+["Twic","PHCU","Anyiel PHCU"],
+["Twic","PHCU","Bulyom PHCU"],
+["Twic","PHCU","Dhiau Agaal PHCU"],
+["Twic","PHCU","Majak Pagai PHCU"],
+["Twic","PHCU","Malou-Hol PHCU"],
+["Twic","PHCU","Maper PHCU"],
+["Twic","PHCU","Marial Maper PHCU"],
+["Twic","PHCU","Molbang PHCU"],
+["Twic","PHCU","Pandit PHCU"],
+["Twic","PHCU","Pannyok PHCU"],
+["Twic","PHCU","Titcok PHCU"],
+["Twic","PHCU","Toch Noon PHCU"],
+["Twic","PHCU","Tuele PHCU"],
+["Twic","PHCU","Yiik Thon PHCU"],
+
+# TONJ SOUTH PHCCs
+["Tonj South","PHCC","Don Bosco PHCC"],
+["Tonj South","PHCC","Thiet PHCC"],
+
+# TONJ SOUTH PHCUs
+["Tonj South","PHCU","Aguka PHCU"],
+["Tonj South","PHCU","Angur PHCU"],
+["Tonj South","PHCU","Jak PHCU"],
+["Tonj South","PHCU","Kal Kuel PHCU"],
+["Tonj South","PHCU","Mabior Yar PHCU"],
+["Tonj South","PHCU","Malual Muok PHCU"],
+["Tonj South","PHCU","Manyiel Thony PHCU"],
+["Tonj South","PHCU","Panakdie PHCU"],
+["Tonj South","PHCU","Pawel PHCU"],
+["Tonj South","PHCU","Wanh Alel PHCU"],
+
+# TONJ NORTH PHCCs
+["Tonj North","PHCC","Akop PHCC"],
+["Tonj North","PHCC","Alabek PHCC"],
+["Tonj North","PHCC","Aliek PHCC"],
+["Tonj North","PHCC","Warrap PHCC"],
+
+# TONJ NORTH PHCUs
+["Tonj North","PHCU","Akurbiok PHCU"],
+["Tonj North","PHCU","Aporlang PHCU"],
+["Tonj North","PHCU","Awul PHCU"],
+["Tonj North","PHCU","Indeed Truth PHCU"],
+["Tonj North","PHCU","Kirik PHCU"],
+["Tonj North","PHCU","Lurcuk PHCU"],
+["Tonj North","PHCU","Madhiath PHCU"],
+["Tonj North","PHCU","Manlor PHCU"],
+["Tonj North","PHCU","Marial Abuok PHCU"],
+["Tonj North","PHCU","Marial Lou PHCU"],
+["Tonj North","PHCU","Pabukchak PHCU"],
+["Tonj North","PHCU","Pagakdit PHCU"],
+["Tonj North","PHCU","Pagol PHCU"],
+["Tonj North","PHCU","Pankot PHCU"],
+["Tonj North","PHCU","Parasika PHCU"],
+["Tonj North","PHCU","Room Tit PHCU"],
+["Tonj North","PHCU","Rual Bet PHCU"],
+
+# TONJ EAST PHCCs
+["Tonj East","PHCC","Ngabagok PHCC"],
+["Tonj East","PHCC","Romic PHCC"],
+
+# TONJ EAST PHCUs
+["Tonj East","PHCU","Aloor PHCU"],
+["Tonj East","PHCU","Ananatak PHCU"],
+["Tonj East","PHCU","Kachuat PHCU"],
+["Tonj East","PHCU","Kuel Cok PHCU"],
+["Tonj East","PHCU","Makuac PHCU"],
+["Tonj East","PHCU","Mayen PHCU"],
+["Tonj East","PHCU","Palal PHCU"],
+["Tonj East","PHCU","Paliang PHCU"],
+["Tonj East","PHCU","Rumabuth PHCU"],
+["Tonj East","PHCU","Wunchuei PHCU"],
+["Tonj East","PHCU","Wunlit PHCU"],
+
+# GOGRIAL WEST PHCCs
+["Gogrial West","PHCC","Ajiep PHCC"],
+["Gogrial West","PHCC","Alek PHCC"],
+["Gogrial West","PHCC","Gogrial PHCC"],
+["Gogrial West","PHCC","Kuajok PHCC"],
+["Gogrial West","PHCC","Prison PHCC"],
+
+# GOGRIAL WEST PHCUs
+["Gogrial West","PHCU","Adet PHCU"],
+["Gogrial West","PHCU","Aget PHCU"],
+["Gogrial West","PHCU","Akon PHCU"],
+["Gogrial West","PHCU","Anguoth PHCU"],
+["Gogrial West","PHCU","Atuk Kuel PHCU"],
+["Gogrial West","PHCU","Keet PHCU"],
+["Gogrial West","PHCU","Magat PHCU"],
+["Gogrial West","PHCU","Maluil Ajak PHCU"],
+["Gogrial West","PHCU","Mayen Gumel PHCU"],
+["Gogrial West","PHCU","Mayen Pajok PHCU"],
+["Gogrial West","PHCU","Mayom PHCU"],
+["Gogrial West","PHCU","Mayom Totin PHCU"],
+["Gogrial West","PHCU","Nyokthiang PHCU"],
+["Gogrial West","PHCU","Pakor PHCU"],
+["Gogrial West","PHCU","Paliet PHCU"],
+["Gogrial West","PHCU","Panachier PHCU"],
+["Gogrial West","PHCU","Paweng PHCU"],
+["Gogrial West","PHCU","Peeth PHCU"],
+["Gogrial West","PHCU","Thurnyior PHCU"],
+
+# GOGRIAL EAST PHCCs
+["Gogrial East","PHCC","Lietnhom PHCC"],
+["Gogrial East","PHCC","Luonyaker PHCC"],
+
+# GOGRIAL EAST PHCUs
+["Gogrial East","PHCU","Ajogo PHCU"],
+["Gogrial East","PHCU","Angeruger PHCU"],
+["Gogrial East","PHCU","Awut Wut PHCU"],
+["Gogrial East","PHCU","Majak Nyiuom PHCU"],
+["Gogrial East","PHCU","Maliai PHCU"],
+["Gogrial East","PHCU","Mangol PHCU"],
+["Gogrial East","PHCU","Matiel PHCU"],
+["Gogrial East","PHCU","Mayom Biong PHCU"],
+["Gogrial East","PHCU","Mayom Chol PHCU"],
+["Gogrial East","PHCU","Pinydit PHCU"],
+["Gogrial East","PHCU","Ruot PHCU"],
+["Gogrial East","PHCU","Wunakoc PHCU"],
+["Gogrial East","PHCU","Yiikadoor PHCU"]
+]
+
+facility_df = pd.DataFrame(
+    facility_data,
+    columns=["County", "Facility Type", "Facility Name"]
 )
+
+facility_df = facility_df.sort_values(
+    ["County", "Facility Type", "Facility Name"]
+)
+
+st.dataframe(
+    facility_df,
+    use_container_width=True,
+    hide_index=True
+)
+
+st.subheader("Healthcare Facility Summary")
+
+c1, c2, c3 = st.columns(3)
+
+c1.metric("Total PHCCs", "23")
+c2.metric("Total PHCUs", "85")
+c3.metric("Grand Total Facilities", "108")
+
 
 hospital_chart.update_layout(height=500)
 
