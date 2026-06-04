@@ -393,6 +393,12 @@ c1.metric("Total PHCCs", "23")
 c2.metric("Total PHCUs", "85")
 c3.metric("Grand Total Facilities", "108")
 
+hospital_chart = px.pie(
+    hospital_df,
+    names="County",
+    values="Hospitals",
+    hole=0.3
+)
 
 hospital_chart.update_layout(height=500)
 
