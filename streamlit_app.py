@@ -164,8 +164,8 @@ Greater Warrap State currently has 48 officially integrated primary healthcare f
 
 col1, col2, col3 = st.columns(3)
 
-col1.metric("PHCCs", "21")
-col2.metric("PHCUs", "27")
+col1.metric("PHCCs", "23")
+col2.metric("PHCUs", "85")
 col3.metric("Referral Hospitals", "4")
 
 hospital_df = pd.DataFrame({
