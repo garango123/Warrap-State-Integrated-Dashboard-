@@ -1,9 +1,6 @@
 import streamlit as st
-import sqlite3
-import hashlib
-import io
-from datetime import datetime
-from pathlib import Path
+import pandas as pd
+import plotly.express as px
 
 # =========================================================
 # PAGE CONFIG
@@ -11,1156 +8,636 @@ from pathlib import Path
 
 st.set_page_config(
     page_title="Warrap State Integrated Dashboard",
-    page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
 )
 
 # =========================================================
-# DATABASE
-# =========================================================
-
-DB_NAME = "users.db"
-
-
-def get_connection():
-    return sqlite3.connect(DB_NAME)
-
-
-def create_database():
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            created_at TEXT NOT NULL
-        )
-    """)
-
-    conn.commit()
-    conn.close()
-
-
-def hash_password(password):
-
-    return hashlib.sha256(
-        password.encode("utf-8")
-    ).hexdigest()
-
-
-def register_user(username, password):
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    try:
-
-        cursor.execute(
-            """
-            INSERT INTO users
-            (username, password, created_at)
-            VALUES (?, ?, ?)
-            """,
-            (
-                username,
-                hash_password(password),
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            )
-        )
-
-        conn.commit()
-
-        return True
-
-    except sqlite3.IntegrityError:
-
-        return False
-
-    finally:
-
-        conn.close()
-
-
-def authenticate_user(username, password):
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        SELECT username
-        FROM users
-        WHERE username = ?
-        AND password = ?
-        """,
-        (
-            username,
-            hash_password(password)
-        )
-    )
-
-    result = cursor.fetchone()
-
-    conn.close()
-
-    return result is not None
-
-
-create_database()
-
-# =========================================================
-# SESSION STATE
-# =========================================================
-
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-
-if "username" not in st.session_state:
-    st.session_state.username = ""
-
-# =========================================================
-# PROFESSIONAL CSS
+# CUSTOM CSS
 # =========================================================
 
 st.markdown("""
 <style>
 
-.stApp {
-    background: #f5f7fb;
+.main {
+    background-color: #f5f7fb;
 }
 
-/* Main headings */
-
 h1 {
-    font-size: 40px !important;
+    font-size: 42px !important;
     font-weight: 800 !important;
+    color: #1f2937 !important;
 }
 
 h2 {
-    font-weight: 750 !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    margin-top: 40px !important;
 }
 
 h3 {
-    font-weight: 700 !important;
+    color: #374151 !important;
+}
+
+p, li {
+    color: #4b5563 !important;
+    font-size: 16px !important;
+    line-height: 1.7 !important;
 }
 
 /* Metric cards */
-
 div[data-testid="metric-container"] {
-
     background: white;
-
     border: 1px solid #e5e7eb;
-
+    padding: 25px;
     border-radius: 18px;
-
-    padding: 22px;
-
-    box-shadow:
-        0 5px 15px rgba(0,0,0,0.05);
-
-}
-
-/* Buttons */
-
-.stButton > button,
-.stDownloadButton > button {
-
-    border-radius: 12px;
-
-    font-weight: 600;
-
-    min-height: 45px;
-
-}
-
-/* Tables */
-
-[data-testid="stDataFrame"] {
-
-    border-radius: 16px;
-
-    border: 1px solid #e5e7eb;
-
-    overflow: hidden;
-
-}
-
-/* Charts */
-
-.js-plotly-plot {
-
-    background: white !important;
-
-    border-radius: 18px;
-
-    padding: 10px;
-
-    border: 1px solid #e5e7eb;
-
-    box-shadow:
-        0 5px 15px rgba(0,0,0,0.04);
-
-}
-
-/* Login card */
-
-.login-card {
-
-    background: white;
-
-    padding: 40px;
-
-    border-radius: 24px;
-
-    border: 1px solid #e5e7eb;
-
-    box-shadow:
-        0 10px 30px rgba(0,0,0,0.08);
-
-}
-
-/* Welcome banner */
-
-.welcome {
-
-    padding: 18px 22px;
-
-    border-radius: 15px;
-
-    background: white;
-
-    border: 1px solid #e5e7eb;
-
-    margin-bottom: 20px;
-
-}
-
-/* Footer */
-
-.footer {
-
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
     text-align: center;
+}
 
-    color: #6b7280;
+/* DataFrames */
+[data-testid="stDataFrame"] {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    padding: 10px;
+}
 
-    padding: 30px;
+/* Plotly charts */
+.js-plotly-plot {
+    background: white !important;
+    border-radius: 20px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    border: 1px solid #e5e7eb;
+}
 
+/* Success box */
+.success-box {
+    background: #dff5e6;
+    color: #1d7a3e;
+    padding: 20px;
+    border-radius: 14px;
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 20px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # =========================================================
-# LOGIN PAGE
+# HEADER
 # =========================================================
 
-if not st.session_state.logged_in:
+st.title("Warrap State Integrated Data Analytics Dashboard")
 
-    st.markdown(
-        "<h1 style='text-align:center;'>📊 Warrap State</h1>",
-        unsafe_allow_html=True
-    )
+st.markdown("""
+A comprehensive regional analytics platform providing insights into:
 
-    st.markdown(
-        "<h3 style='text-align:center;'>Integrated Data Analytics Dashboard</h3>",
-        unsafe_allow_html=True
-    )
-
-    st.write("")
-
-    left, center, right = st.columns(
-        [1, 2, 1]
-    )
-
-    with center:
-
-        st.markdown(
-            "<div class='login-card'>",
-            unsafe_allow_html=True
-        )
-
-        login_tab, register_tab = st.tabs(
-            ["🔐 Login", "📝 Create Account"]
-        )
-
-        # =================================================
-        # LOGIN
-        # =================================================
-
-        with login_tab:
-
-            st.subheader("Welcome Back")
-
-            username = st.text_input(
-                "Username",
-                placeholder="Enter your username",
-                key="login_username"
-            )
-
-            password = st.text_input(
-                "Password",
-                type="password",
-                placeholder="Enter your password",
-                key="login_password"
-            )
-
-            if st.button(
-                "🔐 Login",
-                use_container_width=True
-            ):
-
-                if not username or not password:
-
-                    st.warning(
-                        "Please enter your username and password."
-                    )
-
-                elif authenticate_user(
-                    username,
-                    password
-                ):
-
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-
-                    st.rerun()
-
-                else:
-
-                    st.error(
-                        "Incorrect username or password."
-                    )
-
-        # =================================================
-        # REGISTER
-        # =================================================
-
-        with register_tab:
-
-            st.subheader("Create Your Account")
-
-            new_username = st.text_input(
-                "Username",
-                placeholder="Choose a username",
-                key="new_username"
-            )
-
-            new_password = st.text_input(
-                "Password",
-                type="password",
-                placeholder="Minimum 8 characters",
-                key="new_password"
-            )
-
-            confirm_password = st.text_input(
-                "Confirm Password",
-                type="password",
-                key="confirm_password"
-            )
-
-            if st.button(
-                "📝 Create Account",
-                use_container_width=True
-            ):
-
-                if not new_username or not new_password:
-
-                    st.warning(
-                        "Please complete all fields."
-                    )
-
-                elif len(new_password) < 8:
-
-                    st.warning(
-                        "Password must contain at least 8 characters."
-                    )
-
-                elif new_password != confirm_password:
-
-                    st.error(
-                        "Passwords do not match."
-                    )
-
-                elif register_user(
-                    new_username.strip(),
-                    new_password
-                ):
-
-                    st.success(
-                        "Account created successfully!"
-                    )
-
-                    st.info(
-                        "Please switch to the Login tab."
-                    )
-
-                else:
-
-                    st.error(
-                        "That username already exists."
-                    )
-
-        st.markdown(
-            "</div>",
-            unsafe_allow_html=True
-        )
-
-    st.stop()
+- Population
+- Healthcare Infrastructure
+- Education Systems
+- Livestock Economy
+- Agriculture
+- Climate Impacts
+- County-Level Development Indicators
+""")
 
 # =========================================================
-# SIDEBAR
+# POPULATION SECTION
 # =========================================================
 
-with st.sidebar:
+st.header("Population Overview")
 
-    st.title("📊 Warrap Analytics")
+st.metric(
+    label="Estimated Population",
+    value="1.7 Million"
+)
 
-    st.markdown("---")
+st.info("""
+Warrap State consists of six counties:
+Twic, Tonj East, Tonj South, Tonj North,
+Gogrial East, and Gogrial West.
+""")
 
-    st.success(
-        f"👤 {st.session_state.username}"
-    )
+population_df = pd.DataFrame({
+    "County": [
+        "Tonj North",
+        "Tonj East",
+        "Tonj South",
+        "Gogrial West",
+        "Gogrial East",
+        "Twic"
+    ],
+    "Population": [304899, 213429, 159623, 450174, 190113, 378433]
+})
 
-    st.markdown("### Dashboard")
+st.subheader("Population by County")
 
-    navigation = st.radio(
-        "Navigate",
-        [
-            "🏠 Dashboard",
-            "📄 PDF Report",
-            "ℹ️ About"
-        ]
-    )
+population_chart = px.bar(
+    population_df,
+    x="County",
+    y="Population",
+    color="County",
+    text="Population"
+)
 
-    st.markdown("---")
+population_chart.update_layout(
+    height=500,
+    showlegend=True
+)
 
-    if st.button(
-        "🚪 Logout",
-        use_container_width=True
-    ):
-
-        st.session_state.logged_in = False
-        st.session_state.username = ""
-
-        st.rerun()
-
-    st.markdown("---")
-
-    st.caption(
-        "Warrap State Integrated\n"
-        "Data Analytics Platform"
-    )
+st.plotly_chart(population_chart, use_container_width=True)
 
 # =========================================================
-# DASHBOARD
+# HEALTHCARE SECTION
 # =========================================================
 
-if navigation == "🏠 Dashboard":
+st.header("Healthcare Infrastructure")
 
-    st.markdown(
-        f"""
-        <div class="welcome">
-        <b>Welcome, {st.session_state.username} 👋</b><br>
-        Explore integrated development indicators for Warrap State.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+st.markdown("""
+Greater Warrap State currently has 108 officially integrated primary healthcare facilities operating within the regional healthcare service network.
+""")
 
-    # -----------------------------------------------------
-    # QUICK INDICATORS
-    # -----------------------------------------------------
+col1, col2, col3 = st.columns(3)
 
-    st.title(
-        "Warrap State Integrated Data Analytics Dashboard"
-    )
+col1.metric("PHCCs", "23")
+col2.metric("PHCUs", "85")
+col3.metric("Referral Hospitals", "4")
 
-    st.markdown(
-        """
-        Explore population, healthcare, education,
-        livestock, agriculture, climate and county-level
-        development information.
-        """
-    )
+hospital_df = pd.DataFrame({
+    "County": [
+        "Tonj South",
+        "Twic",
+        "Tonj North",
+        "Gogrial West",
+        "Tonj East",
+        "Gogrial East"
+    ],
+    "Hospitals": [6, 4, 5, 5, 4, 4]
+})
 
-    st.markdown("---")
+# =========================================================
+# REFERRAL HOSPITAL DIRECTORY
+# =========================================================
 
-    q1, q2, q3, q4 = st.columns(4)
+st.subheader(" Referral Hospital Directory")
 
-    q1.metric(
-        "Population",
-        "1.7M"
-    )
+referral_hospitals_df = pd.DataFrame({
+    "Hospital Name": [
+        "Kuajok State Hospital",
+        "Tonj Civil Hospital",
+        "Turalei Hospital",
+        "Marial Lou Hospital"
+    ],
+    "Town Location": [
+        "Kuajok Town",
+        "Tonj Town",
+        "Turalei Town",
+        "Marial Lou Payam"
+    ],
+    "County Location": [
+        "Gogrial West County",
+        "Tonj South County",
+        "Twic County",
+        "Tonj North County"
+    ],
+    "Regional Focus": [
+        "Main capital hub for the state",
+        "Main hub for the southern zone",
+        "Handles the northern border areas",
+        "Handles the northwestern interior"
+    ]
+})
 
-    q2.metric(
-        "Health Facilities",
-        "108"
-    )
+st.dataframe(
+    referral_hospitals_df,
+    use_container_width=True,
+    hide_index=True
+)
 
-    q3.metric(
-        "Primary Schools",
-        "1,286"
-    )
 
-    q4.metric(
-        "Counties",
-        "6"
-    )
+# =========================================================
+# HEALTH FACILITY DIRECTORY
+# =========================================================
 
-    st.markdown("---")
+st.header("Healthcare Facility Directory")
 
-    # -----------------------------------------------------
-    # COUNTY FILTER
-    # -----------------------------------------------------
+st.info("""
+The table below contains officially integrated Primary Health Care Centres (PHCCs)
+and Primary Health Care Units (PHCUs) across Warrap State.
 
-    st.subheader("🔎 County Explorer")
+Note: Some facilities are currently experiencing operational challenges due to
+communal conflict and insecurity in certain areas. Functionality may vary
+depending on security and funding conditions.
+""")
 
-    counties = [
-        "All Counties",
+
+facility_data = [
+# TWIC COUNTY PHCCs
+["Twic","PHCC","Ajak Kuac"],
+["Twic","PHCC","Akok PHCC"],
+["Twic","PHCC","Aweng"],
+["Twic","PHCC","Magak PHCC"],
+["Twic","PHCC","Majok Noon"],
+["Twic","PHCC","Mayen Abun"],
+["Twic","PHCC","Turalei PHCC"],
+["Twic","PHCC","Wunrok PHCC"],
+
+# TWIC COUNTY PHCUs
+["Twic","PHCU","Ajong PHCU"],
+["Twic","PHCU","Anyiel PHCU"],
+["Twic","PHCU","Bulyom PHCU"],
+["Twic","PHCU","Dhiau Agaal PHCU"],
+["Twic","PHCU","Majak Pagai PHCU"],
+["Twic","PHCU","Malou-Hol PHCU"],
+["Twic","PHCU","Maper PHCU"],
+["Twic","PHCU","Marial Maper PHCU"],
+["Twic","PHCU","Molbang PHCU"],
+["Twic","PHCU","Pandit PHCU"],
+["Twic","PHCU","Pannyok PHCU"],
+["Twic","PHCU","Titcok PHCU"],
+["Twic","PHCU","Toch Noon PHCU"],
+["Twic","PHCU","Tuele PHCU"],
+["Twic","PHCU","Yiik Thon PHCU"],
+
+# TONJ SOUTH PHCCs
+["Tonj South","PHCC","Don Bosco PHCC"],
+["Tonj South","PHCC","Thiet PHCC"],
+
+# TONJ SOUTH PHCUs
+["Tonj South","PHCU","Aguka PHCU"],
+["Tonj South","PHCU","Angur PHCU"],
+["Tonj South","PHCU","Jak PHCU"],
+["Tonj South","PHCU","Kal Kuel PHCU"],
+["Tonj South","PHCU","Mabior Yar PHCU"],
+["Tonj South","PHCU","Malual Muok PHCU"],
+["Tonj South","PHCU","Manyiel Thony PHCU"],
+["Tonj South","PHCU","Panakdie PHCU"],
+["Tonj South","PHCU","Pawel PHCU"],
+["Tonj South","PHCU","Wanh Alel PHCU"],
+
+# TONJ NORTH PHCCs
+["Tonj North","PHCC","Akop PHCC"],
+["Tonj North","PHCC","Alabek PHCC"],
+["Tonj North","PHCC","Aliek PHCC"],
+["Tonj North","PHCC","Warrap PHCC"],
+
+# TONJ NORTH PHCUs
+["Tonj North","PHCU","Akurbiok PHCU"],
+["Tonj North","PHCU","Aporlang PHCU"],
+["Tonj North","PHCU","Awul PHCU"],
+["Tonj North","PHCU","Indeed Truth PHCU"],
+["Tonj North","PHCU","Kirik PHCU"],
+["Tonj North","PHCU","Lurcuk PHCU"],
+["Tonj North","PHCU","Madhiath PHCU"],
+["Tonj North","PHCU","Manlor PHCU"],
+["Tonj North","PHCU","Marial Abuok PHCU"],
+["Tonj North","PHCU","Marial Lou PHCU"],
+["Tonj North","PHCU","Pabukchak PHCU"],
+["Tonj North","PHCU","Pagakdit PHCU"],
+["Tonj North","PHCU","Pagol PHCU"],
+["Tonj North","PHCU","Pankot PHCU"],
+["Tonj North","PHCU","Parasika PHCU"],
+["Tonj North","PHCU","Room Tit PHCU"],
+["Tonj North","PHCU","Rual Bet PHCU"],
+
+# TONJ EAST PHCCs
+["Tonj East","PHCC","Ngabagok PHCC"],
+["Tonj East","PHCC","Romic PHCC"],
+
+# TONJ EAST PHCUs
+["Tonj East","PHCU","Aloor PHCU"],
+["Tonj East","PHCU","Ananatak PHCU"],
+["Tonj East","PHCU","Kachuat PHCU"],
+["Tonj East","PHCU","Kuel Cok PHCU"],
+["Tonj East","PHCU","Makuac PHCU"],
+["Tonj East","PHCU","Mayen PHCU"],
+["Tonj East","PHCU","Palal PHCU"],
+["Tonj East","PHCU","Paliang PHCU"],
+["Tonj East","PHCU","Rumabuth PHCU"],
+["Tonj East","PHCU","Wunchuei PHCU"],
+["Tonj East","PHCU","Wunlit PHCU"],
+
+# GOGRIAL WEST PHCCs
+["Gogrial West","PHCC","Ajiep PHCC"],
+["Gogrial West","PHCC","Alek PHCC"],
+["Gogrial West","PHCC","Gogrial PHCC"],
+["Gogrial West","PHCC","Kuajok PHCC"],
+["Gogrial West","PHCC","Prison PHCC"],
+
+# GOGRIAL WEST PHCUs
+["Gogrial West","PHCU","Adet PHCU"],
+["Gogrial West","PHCU","Aget PHCU"],
+["Gogrial West","PHCU","Akon PHCU"],
+["Gogrial West","PHCU","Anguoth PHCU"],
+["Gogrial West","PHCU","Atuk Kuel PHCU"],
+["Gogrial West","PHCU","Keet PHCU"],
+["Gogrial West","PHCU","Magat PHCU"],
+["Gogrial West","PHCU","Maluil Ajak PHCU"],
+["Gogrial West","PHCU","Mayen Gumel PHCU"],
+["Gogrial West","PHCU","Mayen Pajok PHCU"],
+["Gogrial West","PHCU","Mayom PHCU"],
+["Gogrial West","PHCU","Mayom Totin PHCU"],
+["Gogrial West","PHCU","Nyokthiang PHCU"],
+["Gogrial West","PHCU","Pakor PHCU"],
+["Gogrial West","PHCU","Paliet PHCU"],
+["Gogrial West","PHCU","Panachier PHCU"],
+["Gogrial West","PHCU","Paweng PHCU"],
+["Gogrial West","PHCU","Peeth PHCU"],
+["Gogrial West","PHCU","Thurnyior PHCU"],
+
+# GOGRIAL EAST PHCCs
+["Gogrial East","PHCC","Lietnhom PHCC"],
+["Gogrial East","PHCC","Luonyaker PHCC"],
+
+# GOGRIAL EAST PHCUs
+["Gogrial East","PHCU","Ajogo PHCU"],
+["Gogrial East","PHCU","Angeruger PHCU"],
+["Gogrial East","PHCU","Awut Wut PHCU"],
+["Gogrial East","PHCU","Majak Nyiuom PHCU"],
+["Gogrial East","PHCU","Maliai PHCU"],
+["Gogrial East","PHCU","Mangol PHCU"],
+["Gogrial East","PHCU","Matiel PHCU"],
+["Gogrial East","PHCU","Mayom Biong PHCU"],
+["Gogrial East","PHCU","Mayom Chol PHCU"],
+["Gogrial East","PHCU","Pinydit PHCU"],
+["Gogrial East","PHCU","Ruot PHCU"],
+["Gogrial East","PHCU","Wunakoc PHCU"],
+["Gogrial East","PHCU","Yiikadoor PHCU"]
+]
+
+facility_df = pd.DataFrame(
+    facility_data,
+    columns=["County", "Facility Type", "Facility Name"]
+)
+
+facility_df = facility_df.sort_values(
+    ["County", "Facility Type", "Facility Name"]
+)
+
+st.dataframe(
+    facility_df,
+    use_container_width=True,
+    hide_index=True
+)
+
+st.subheader("Healthcare Facility Summary")
+
+c1, c2, c3 = st.columns(3)
+
+c1.metric("Total PHCCs", "23")
+c2.metric("Total PHCUs", "85")
+c3.metric("Grand Total Facilities", "108")
+
+hospital_chart = px.pie(
+    hospital_df,
+    names="County",
+    values="Hospitals",
+    hole=0.3
+)
+
+hospital_chart.update_layout(height=500)
+
+st.plotly_chart(hospital_chart, use_container_width=True)
+
+# =========================================================
+# EDUCATION SECTION
+# =========================================================
+
+st.header("Education Infrastructure")
+
+education_df = pd.DataFrame({
+    "County": [
         "Gogrial West",
         "Twic",
         "Gogrial East",
         "Tonj North",
         "Tonj South",
         "Tonj East"
+    ],
+    "Primary Schools": [315, 288, 234, 209, 109, 131],
+    "Secondary Schools": [26, 15, 11, 9, 22, 3],
+    "CEC Centers": [1, 1, 1, 1, 1, 1],
+    "TVET Centers": [1, 1, 0, 0, 1, 0],
+    "Headquarters": [
+        "Gogrial HQRS",
+        "Turalei HQRS",
+        "Lietnhom HQRS",
+        "Warrap HQRS",
+        "Tonj HQRS",
+        "Romic HQRS"
     ]
+})
 
-    selected_county = st.selectbox(
-        "Select a county",
-        counties
-    )
+st.dataframe(education_df, use_container_width=True)
 
-    if selected_county != "All Counties":
+st.subheader("Education Summary")
 
-        st.info(
-            f"You are viewing information related to "
-            f"**{selected_county} County**."
-        )
+e1, e2, e3, e4 = st.columns(4)
 
-    # -----------------------------------------------------
-    # LOAD ORIGINAL DASHBOARD
-    # -----------------------------------------------------
+e1.metric("Primary Schools", "1,286")
+e2.metric("Secondary Schools", "86")
+e3.metric("CEC Centers", "6")
+e4.metric("TVET Centers", "3")
 
-    # IMPORTANT:
-    # dashboard.py is your original code.
-    # DO NOT MODIFY IT.
+st.subheader("Schools by County")
 
-    dashboard_file = Path("dashboard.py")
+school_chart = px.bar(
+    education_df,
+    x="County",
+    y="Primary Schools",
+    color="County",
+    text="Primary Schools"
+)
 
-    if dashboard_file.exists():
+school_chart.update_layout(height=500)
 
-        # Execute the original dashboard.
-        # Its code remains completely unchanged.
-
-        with open(
-            dashboard_file,
-            "r",
-            encoding="utf-8"
-        ) as file:
-
-            dashboard_code = file.read()
-
-        exec(
-            compile(
-                dashboard_code,
-                "dashboard.py",
-                "exec"
-            )
-        )
-
-    else:
-
-        st.error(
-            "dashboard.py was not found. "
-            "Please make sure your original dashboard code "
-            "is saved as dashboard.py."
-        )
+st.plotly_chart(school_chart, use_container_width=True)
 
 # =========================================================
-# PDF REPORT
+# LIVESTOCK SECTION
 # =========================================================
 
-elif navigation == "📄 PDF Report":
-
-    st.title("📄 Professional Dashboard Report")
-
-    st.markdown(
-        """
-        Generate a downloadable PDF report containing
-        key Warrap State development indicators.
-        """
-    )
-
-    st.markdown("---")
-
-    st.subheader("Report Information")
-
-    report_col1, report_col2 = st.columns(2)
-
-    with report_col1:
-
-        st.write(
-            f"**Prepared for:** "
-            f"{st.session_state.username}"
-        )
-
-        st.write(
-            "**Region:** Warrap State, South Sudan"
-        )
-
-    with report_col2:
-
-        st.write(
-            "**Report Type:** Integrated Analytics"
-        )
-
-        st.write(
-            f"**Date:** "
-            f"{datetime.now().strftime('%d %B %Y')}"
-        )
-
-    # =====================================================
-    # PDF GENERATOR
-    # =====================================================
-
-    def create_pdf():
-
-        from reportlab.lib.pagesizes import A4
-        from reportlab.platypus import (
-            SimpleDocTemplate,
-            Paragraph,
-            Spacer,
-            Table,
-            TableStyle,
-            PageBreak
-        )
-
-        from reportlab.lib import colors
-
-        from reportlab.lib.styles import (
-            getSampleStyleSheet,
-            ParagraphStyle
-        )
-
-        from reportlab.lib.enums import TA_CENTER
-
-        buffer = io.BytesIO()
-
-        document = SimpleDocTemplate(
-            buffer,
-            pagesize=A4,
-            rightMargin=40,
-            leftMargin=40,
-            topMargin=45,
-            bottomMargin=45
-        )
-
-        styles = getSampleStyleSheet()
-
-        title_style = ParagraphStyle(
-            "DashboardTitle",
-            parent=styles["Title"],
-            alignment=TA_CENTER,
-            fontSize=20,
-            leading=25,
-            spaceAfter=20
-        )
-
-        section_style = ParagraphStyle(
-            "Section",
-            parent=styles["Heading2"],
-            fontSize=15,
-            leading=20,
-            spaceBefore=15,
-            spaceAfter=10
-        )
-
-        normal_style = ParagraphStyle(
-            "Normal",
-            parent=styles["BodyText"],
-            fontSize=10,
-            leading=15
-        )
-
-        story = []
-
-        # -------------------------------------------------
-        # COVER
-        # -------------------------------------------------
-
-        story.append(
-            Spacer(1, 50)
-        )
-
-        story.append(
-            Paragraph(
-                "WARRAP STATE",
-                title_style
-            )
-        )
-
-        story.append(
-            Paragraph(
-                "Integrated Data Analytics Dashboard",
-                title_style
-            )
-        )
-
-        story.append(
-            Spacer(1, 25)
-        )
-
-        story.append(
-            Paragraph(
-                "Professional Regional Development Report",
-                normal_style
-            )
-        )
-
-        story.append(
-            Spacer(1, 15)
-        )
-
-        story.append(
-            Paragraph(
-                f"Prepared for: "
-                f"{st.session_state.username}",
-                normal_style
-            )
-        )
-
-        story.append(
-            Paragraph(
-                f"Generated: "
-                f"{datetime.now().strftime('%d %B %Y, %H:%M')}",
-                normal_style
-            )
-        )
-
-        story.append(
-            Spacer(1, 50)
-        )
-
-        story.append(
-            Paragraph(
-                "This report summarizes selected population, "
-                "healthcare, education, livestock, agriculture "
-                "and climate indicators for Warrap State.",
-                normal_style
-            )
-        )
-
-        story.append(
-            PageBreak()
-        )
-
-        # -------------------------------------------------
-        # EXECUTIVE SUMMARY
-        # -------------------------------------------------
-
-        story.append(
-            Paragraph(
-                "Executive Summary",
-                section_style
-            )
-        )
-
-        summary = """
-        Warrap State Integrated Data Analytics Dashboard
-        provides a consolidated view of important regional
-        development indicators. The dashboard covers
-        population, healthcare infrastructure, education,
-        livestock, agriculture, climate stressors and
-        county-level information.
-        """
-
-        story.append(
-            Paragraph(
-                summary,
-                normal_style
-            )
-        )
-
-        # -------------------------------------------------
-        # POPULATION
-        # -------------------------------------------------
-
-        story.append(
-            Paragraph(
-                "1. Population",
-                section_style
-            )
-        )
-
-        population_table = Table([
-            ["Indicator", "Value"],
-            ["Estimated Population", "1.7 Million"],
-            ["Number of Counties", "6"]
-        ], colWidths=[280, 180])
-
-        population_table.setStyle(
-            TableStyle([
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.lightgrey
-                ),
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.grey
-                ),
-                (
-                    "PADDING",
-                    (0, 0),
-                    (-1, -1),
-                    8
-                )
-            ])
-        )
-
-        story.append(
-            population_table
-        )
-
-        # -------------------------------------------------
-        # HEALTHCARE
-        # -------------------------------------------------
-
-        story.append(
-            Paragraph(
-                "2. Healthcare Infrastructure",
-                section_style
-            )
-        )
-
-        health_table = Table([
-            ["Indicator", "Value"],
-            ["PHCCs", "23"],
-            ["PHCUs", "85"],
-            ["Referral Hospitals", "4"],
-            ["Total Facilities", "108"]
-        ], colWidths=[280, 180])
-
-        health_table.setStyle(
-            TableStyle([
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.lightgrey
-                ),
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.grey
-                ),
-                (
-                    "PADDING",
-                    (0, 0),
-                    (-1, -1),
-                    8
-                )
-            ])
-        )
-
-        story.append(
-            health_table
-        )
-
-        # -------------------------------------------------
-        # EDUCATION
-        # -------------------------------------------------
-
-        story.append(
-            Paragraph(
-                "3. Education Infrastructure",
-                section_style
-            )
-        )
-
-        education_table = Table([
-            ["Indicator", "Value"],
-            ["Primary Schools", "1,286"],
-            ["Secondary Schools", "86"],
-            ["CEC Centers", "6"],
-            ["TVET Centers", "3"]
-        ], colWidths=[280, 180])
-
-        education_table.setStyle(
-            TableStyle([
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.lightgrey
-                ),
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.grey
-                ),
-                (
-                    "PADDING",
-                    (0, 0),
-                    (-1, -1),
-                    8
-                )
-            ])
-        )
-
-        story.append(
-            education_table
-        )
-
-        # -------------------------------------------------
-        # LIVESTOCK
-        # -------------------------------------------------
-
-        story.append(
-            Paragraph(
-                "4. Livestock Economy",
-                section_style
-            )
-        )
-
-        story.append(
-            Paragraph(
-                "Estimated cattle population: "
-                "7 Million Head.",
-                normal_style
-            )
-        )
-
-        # -------------------------------------------------
-        # AGRICULTURE
-        # -------------------------------------------------
-
-        story.append(
-            Paragraph(
-                "5. Agricultural Production",
-                section_style
-            )
-        )
-
-        crop_table = Table([
-            ["Crop", "Production Index"],
-            ["Sorghum", "95"],
-            ["Groundnuts", "80"],
-            ["Maize", "75"],
-            ["Sesame", "60"],
-            ["Millet", "55"]
-        ], colWidths=[280, 180])
-
-        crop_table.setStyle(
-            TableStyle([
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.lightgrey
-                ),
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.grey
-                ),
-                (
-                    "PADDING",
-                    (0, 0),
-                    (-1, -1),
-                    8
-                )
-            ])
-        )
-
-        story.append(
-            crop_table
-        )
-
-        # -------------------------------------------------
-        # CLIMATE
-        # -------------------------------------------------
-
-        story.append(
-            Paragraph(
-                "6. Climate and System Stressors",
-                section_style
-            )
-        )
-
-        climate_table = Table([
-            ["Stress Factor", "Impact Level"],
-            ["Flooding", "90"],
-            ["Disease", "75"],
-            ["Water Competition", "65"],
-            ["Crop Damage", "80"],
-            ["Grazing Pressure", "70"]
-        ], colWidths=[280, 180])
-
-        climate_table.setStyle(
-            TableStyle([
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.lightgrey
-                ),
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.grey
-                ),
-                (
-                    "PADDING",
-                    (0, 0),
-                    (-1, -1),
-                    8
-                )
-            ])
-        )
-
-        story.append(
-            climate_table
-        )
-
-        # -------------------------------------------------
-        # METHODOLOGY
-        # -------------------------------------------------
-
-        story.append(
-            Paragraph(
-                "7. Methodology",
-                section_style
-            )
-        )
-
-        methodology = """
-        Data were organized and presented using Python,
-        Pandas, Plotly and Streamlit. Where direct
-        county-level data were unavailable, derived
-        estimates should be interpreted as estimates
-        rather than directly published official figures.
-        """
-
-        story.append(
-            Paragraph(
-                methodology,
-                normal_style
-            )
-        )
-
-        story.append(
-            Spacer(1, 20)
-        )
-
-        story.append(
-            Paragraph(
-                "Data may vary by year, methodology and "
-                "reporting period.",
-                normal_style
-            )
-        )
-
-        document.build(story)
-
-        buffer.seek(0)
-
-        return buffer.getvalue()
-
-    # =====================================================
-    # DOWNLOAD BUTTON
-    # =====================================================
-
-    pdf_data = create_pdf()
-
-    st.download_button(
-        label="⬇️ Download Professional PDF Report",
-        data=pdf_data,
-        file_name=(
-            "Warrap_State_Integrated_Dashboard_Report.pdf"
-        ),
-        mime="application/pdf",
-        use_container_width=True
-    )
+st.header("Livestock Economy")
+
+st.markdown("""
+Livestock represents the primary store of both cultural and economic wealth in Warrap State.
+""")
+
+st.metric(
+    label="Estimated Cattle Population",
+    value="7 Million Head"
+)
+
+livestock_df = pd.DataFrame({
+    "Category": [
+        "Cultural Wealth",
+        "Dowry",
+        "Emergency Reserve",
+        "Food Security",
+        "Economic Assets"
+    ],
+    "Importance": [30, 20, 15, 20, 15]
+})
+
+st.subheader("Livestock Importance")
+
+livestock_chart = px.pie(
+    livestock_df,
+    names="Category",
+    values="Importance"
+)
+
+livestock_chart.update_layout(height=500)
+
+st.plotly_chart(livestock_chart, use_container_width=True)
 
 # =========================================================
-# ABOUT
+# AGRICULTURE SECTION
 # =========================================================
 
-elif navigation == "ℹ️ About":
+st.header("Agricultural Production")
 
-    st.title("ℹ️ About the Dashboard")
+crop_df = pd.DataFrame({
+    "Crop": [
+        "Sorghum",
+        "Groundnuts",
+        "Maize",
+        "Sesame",
+        "Millet"
+    ],
+    "Production Index": [95, 80, 75, 60, 55]
+})
 
-    st.markdown(
-        """
-        ### Warrap State Integrated Data Analytics Dashboard
+st.subheader("Major Crop Production")
 
-        This platform brings together regional development
-        indicators into a single interactive analytics
-        environment.
+crop_chart = px.bar(
+    crop_df,
+    x="Crop",
+    y="Production Index",
+    color="Crop",
+    text="Production Index"
+)
 
-        #### Main Areas
+crop_chart.update_layout(height=500)
 
-        - 👥 Population
-        - 🏥 Healthcare
-        - 🎓 Education
-        - 🐄 Livestock
-        - 🌾 Agriculture
-        - 🌦️ Climate
-        - 🏘️ County-level development
+st.plotly_chart(crop_chart, use_container_width=True)
 
-        #### Technology
+# =========================================================
+# CLIMATE SECTION
+# =========================================================
 
-        The platform is built using:
+st.header("Climate and System Stressors")
 
-        - Python
-        - Streamlit
-        - Pandas
-        - Plotly
-        - SQLite
-        - ReportLab
+climate_df = pd.DataFrame({
+    "Stress Factor": [
+        "Flooding",
+        "Disease",
+        "Water Competition",
+        "Crop Damage",
+        "Grazing Pressure"
+    ],
+    "Impact Level": [90, 75, 65, 80, 70]
+})
 
-        #### Purpose
+st.subheader("Climate Impact Levels")
 
-        The dashboard is designed to make regional data
-        easier to explore, understand and communicate.
-        """
-    )
+climate_chart = px.line(
+    climate_df,
+    x="Stress Factor",
+    y="Impact Level",
+    markers=True
+)
 
-    st.markdown("---")
+climate_chart.update_layout(height=500)
 
-    st.info(
-        "Data should always be interpreted according to "
-        "its source, reporting year and methodology."
-    )
+st.plotly_chart(climate_chart, use_container_width=True)
+
+# =========================================================
+# COUNTY OVERVIEW
+# =========================================================
+
+st.header("County Overview")
+
+county_df = pd.DataFrame({
+    "County": [
+        "Gogrial West",
+        "Twic",
+        "Gogrial East",
+        "Tonj North",
+        "Tonj South",
+        "Tonj East"
+    ],
+    "Key Economic Activities": [
+        "Livestock, Farming",
+        "Livestock, Groundnuts",
+        "Agriculture, Livestock",
+        "Livestock, Sorghum",
+        "Agriculture, Trade",
+        "Pastoralism, Farming"
+    ]
+})
+
+st.dataframe(county_df, use_container_width=True)
+
+# =========================================================
+# SUCCESS BOX
+# =========================================================
+
+st.markdown("""
+<div class="success-box">
+Dashboard loaded successfully
+</div>
+""", unsafe_allow_html=True)
+
+# =========================================================
+# METHODOLOGY
+# =========================================================
+
+st.header("Methodology")
+
+st.markdown("""
+**Population:** The Warrap State population figure is based on National
+Bureau of Statistics (NBS) population projections. County-level figures are
+derived by applying NBS county population proportions to the official
+Warrap State total.
+
+**Data Processing:** Data were organized, validated, and presented using
+Python and Streamlit. Where direct county-level data were unavailable,
+derived estimates are clearly identified and should not be interpreted as
+directly published NBS figures.
+
+**Visualization:** Interactive charts and tables are generated using
+Plotly and Pandas.
+""")
 
 # =========================================================
 # FOOTER
 # =========================================================
+# =========================================================
+# FOOTER / DATA SOURCES
+# =========================================================
 
-st.markdown(
-    """
-    <div class="footer">
-        © 2026 Warrap State Integrated Data Analytics Dashboard<br>
-        Built with Python and Streamlit
-    </div>
-    """,
-    unsafe_allow_html=True
+st.markdown("---")
+
+st.subheader("Data Sources")
+
+st.markdown("""
+- [Warrap State Government](https://www.warrap.gov.ss/)
+- [National Bureau of Statistics (NBS), South Sudan — Population Projections](https://nbs.gov.ss/wp-content/uploads/2022/05/Population-projections-for-South-Sudan-2020-2040.pdf)
+- [Ministry of Health, South Sudan](https://www.moh.gov.ss/)
+- Education sector field updates
+- Humanitarian and regional assessments
+""")
+
+st.caption(
+    "Sources are provided for transparency and reference. "
+    "Data may vary by year, methodology, and reporting period."
 )
+
+
+
