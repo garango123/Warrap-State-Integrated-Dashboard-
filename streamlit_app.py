@@ -114,7 +114,7 @@ st.header("Population Overview")
 
 st.metric(
     label="Estimated Population",
-    value="1.5 Million"
+    value="1.7 Million"
 )
 
 st.info("""
@@ -132,7 +132,7 @@ population_df = pd.DataFrame({
         "Gogrial East",
         "Twic"
     ],
-    "Population": [240000, 210000, 207000, 337000, 218000, 288000]
+    "Population": [304899, 213429, 159623, 450174, 190113, 378433]
 })
 
 st.subheader("Population by County")
