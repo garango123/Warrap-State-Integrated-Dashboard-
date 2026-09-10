@@ -597,19 +597,28 @@ Dashboard loaded successfully
 # =========================================================
 # FOOTER
 # =========================================================
+# =========================================================
+# FOOTER / DATA SOURCES
+# =========================================================
 
 st.markdown("---")
 
-st.caption("""
-Data Sources 
-st.markdown("""
-**Data Sources:**
+st.subheader("Data Sources")
 
+st.markdown("""
 - [Warrap State Government](https://www.warrap.gov.ss/)
 - [National Bureau of Statistics (NBS), South Sudan — Population Projections](https://nbs.gov.ss/wp-content/uploads/2022/05/Population-projections-for-South-Sudan-2020-2040.pdf)
-- [Ministry of Health, Republic of South Sudan](https://www.moh.gov.ss/)
+- [Ministry of Health, South Sudan](https://www.moh.gov.ss/)
 - Education sector field updates
 - Humanitarian and regional assessments
+""")
+
+st.caption(
+    "Sources are provided for transparency and reference. "
+    "Data may vary by year, methodology, and reporting period."
+)
+
+
 """)
 
 """)
