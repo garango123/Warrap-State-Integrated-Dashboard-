@@ -595,6 +595,27 @@ Dashboard loaded successfully
 """, unsafe_allow_html=True)
 
 # =========================================================
+# METHODOLOGY
+# =========================================================
+
+st.header("Methodology")
+
+st.markdown("""
+**Population:** The Warrap State population figure is based on National
+Bureau of Statistics (NBS) population projections. County-level figures are
+derived by applying NBS county population proportions to the official
+Warrap State total.
+
+**Data Processing:** Data were organized, validated, and presented using
+Python and Streamlit. Where direct county-level data were unavailable,
+derived estimates are clearly identified and should not be interpreted as
+directly published NBS figures.
+
+**Visualization:** Interactive charts and tables are generated using
+Plotly and Pandas.
+""")
+
+# =========================================================
 # FOOTER
 # =========================================================
 # =========================================================
