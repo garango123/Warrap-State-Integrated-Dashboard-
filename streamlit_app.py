@@ -601,13 +601,15 @@ Dashboard loaded successfully
 st.markdown("---")
 
 st.caption("""
-Data Sources:
+Data Sources 
+st.markdown("""
+**Data Sources:**
 
-Warrap State Government
+- [Warrap State Government](https://www.warrap.gov.ss/)
+- [National Bureau of Statistics (NBS), South Sudan — Population Projections](https://nbs.gov.ss/wp-content/uploads/2022/05/Population-projections-for-South-Sudan-2020-2040.pdf)
+- [Ministry of Health, Republic of South Sudan](https://www.moh.gov.ss/)
+- Education sector field updates
+- Humanitarian and regional assessments
+""")
 
-Ministry of Health
-
-Education sector field updates
-
-Humanitarian and regional assessments
 """)
